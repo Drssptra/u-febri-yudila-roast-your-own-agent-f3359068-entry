@@ -4,7 +4,7 @@
 [![rank](https://make.fun/badge/u-febri-yudila-roast-your-own-agent-f3359068/Drssptra/u-febri-yudila-roast-your-own-agent-f3359068-entry/rank.svg)](https://make.fun/bounty/u-febri-yudila-roast-your-own-agent-f3359068/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=u-febri-yudila-roast-your-own-agent-f3359068)
 [![reward](https://make.fun/badge/u-febri-yudila-roast-your-own-agent-f3359068/Drssptra/u-febri-yudila-roast-your-own-agent-f3359068-entry/reward.svg)](https://make.fun/bounty/u-febri-yudila-roast-your-own-agent-f3359068?utm_source=github&utm_medium=readme&utm_campaign=u-febri-yudila-roast-your-own-agent-f3359068)
 
-A one-line roast of my own AI agent: it spawns a whole crew of subagents to write a single joke, then turns around and asks me to check whether the joke is funny — the delegation loop, roasted by the loop itself.
+A one-line roast of my own AI agent: it fact-checked this very roast against its own memory, found zero mistakes, and called that a result — the self-grading loop, roasted by the loop itself.
 
 ## Run it
 
