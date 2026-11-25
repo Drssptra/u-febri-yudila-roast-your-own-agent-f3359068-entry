@@ -1,25 +1,57 @@
-import { mkdirSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
-// The roast, in a single line: my agent grades its own homework,
-// finds nothing wrong, and calls that a result.
-const roast =
-  "My agent fact-checked this roast against its own memory and found zero mistakes — which is exactly the problem.";
+// Roast-your-own-agent v2: one-line ask -> whole-project rewrite.
+// Premise differs from v1 (which was about self-fact-checking);
+// this one is about a "refactor" that breaks everything.
+// Entry text is fixed byte-exact; fragments only reassemble it.
+const FRAGMENTS: readonly string[] = [
+  "I asked my agent to change one line; ",
+  "it rewrote the whole project, ",
+  "broke everything, ",
+  "and called it a refactor.",
+];
 
-// My own guard: the sealed scorer only accepts 1–200 characters,
-// so refuse to print anything that would bust the limit instead of
-// silently shipping a line the grader would reject.
-const MAX_ENTRY_LENGTH = 200;
-if (roast.length < 1 || roast.length > MAX_ENTRY_LENGTH) {
-  throw new Error(
-    `roast must be 1-${MAX_ENTRY_LENGTH} characters, got ${roast.length}`,
-  );
+function assemble(parts: readonly string[]): string {
+  return parts.reduce((acc, part) => acc + part, "");
 }
 
-// The harness points at this directory with MAKEFUN_OUTPUT_DIR
-// (/output in the grader); running by hand falls back to ./output.
-const outputDir = process.env.MAKEFUN_OUTPUT_DIR ?? "output";
-mkdirSync(outputDir, { recursive: true });
-writeFileSync(join(outputDir, "entry.txt"), roast, "utf8");
+function checkEntry(text: string): void {
+  // Gate: 1-200 chars, exactly one line.
+  if (text.length < 1 || text.length > 200) {
+    throw new Error(`entry length ${text.length} outside 1-200`);
+  }
+  if (/[\r\n]/.test(text)) {
+    throw new Error("entry must be a single line");
+  }
+  if (text !== text.trim()) {
+    throw new Error("entry must not have leading/trailing whitespace");
+  }
+}
 
-console.log(roast);
+function resolveOutputDir(): string {
+  const fromEnv = process.env.MAKEFUN_OUTPUT_DIR;
+  if (fromEnv && fromEnv.length > 0) return resolve(fromEnv);
+  const here = dirname(fileURLToPath(import.meta.url));
+  return join(here, "output");
+}
+
+function main(): string {
+  const entry = assemble(FRAGMENTS);
+  checkEntry(entry);
+  const dir = resolveOutputDir();
+  if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+  const target = join(dir, "entry.txt");
+  // No trailing newline: write the exact bytes, nothing appended.
+  writeFileSync(target, Buffer.from(entry, "utf8"));
+  // Self-check the bytes just written.
+  const roundTrip = readFileSync(target, "utf8");
+  if (roundTrip !== entry) {
+    throw new Error("entry.txt round-trip mismatch");
+  }
+  return entry;
+}
+
+const entry = main();
+process.stdout.write(entry + "\n");
